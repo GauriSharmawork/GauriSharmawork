@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Where Cats Dream</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#F6EFE2;
+  --cream-deep:#EFE3CC;
+  --gold:#E3AE47;
+  --gold-soft:#F3D48A;
+  --lavender:#A78BC9;
+  --lavender-deep:#7C60A0;
+  --midnight:#181733;
+  --midnight-deep:#0E0D22;
+  --fur:#232019;
+  --fur-soft:#39332a;
+  --blush:#E7A9A0;
+  --leaf:#7C9A6E;
+  --leaf-deep:#5C7A50;
+  --ink:#2B2620;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;font-family:'Quicksand',sans-serif;background:var(--midnight-deep);}
+#app{position:relative;width:100vw;height:100vh;overflow:hidden;}
+
+.scene{
+  position:absolute;inset:0;
+  opacity:0;pointer-events:none;
+  transition:opacity 1.6s ease;
+}
+.scene.active{opacity:1;pointer-events:auto;}
+
+h1,h2,.display{font-family:'Fraunces',serif;}
+
+/* ============ INTRO ============ */
+#intro{
+  position:absolute;inset:0;z-index:50;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 40%, #2b2750 0%, var(--midnight-deep) 70%);
+  color:var(--cream);text-align:center;padding:24px;
+  transition:opacity 1.4s ease, visibility 1.4s;
+}
+#intro.hide{opacity:0;visibility:hidden;pointer-events:none;}
+#intro h1{font-size:clamp(28px,7vw,52px);font-weight:500;font-style:italic;margin:0 0 10px;letter-spacing:.5px;color:var(--gold-soft);}
+#intro p{font-size:15px;max-width:420px;line-height:1.6;color:#cfc9e6;margin:0 0 30px;}
+#intro .paw{font-size:34px;margin-bottom:18px;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+#enter-btn{
+  font-family:'Quicksand',sans-serif;font-weight:700;font-size:15px;
+  background:var(--gold);color:#3a2a08;border:none;border-radius:30px;
+  padding:14px 34px;cursor:pointer;letter-spacing:.5px;
+  box-shadow:0 6px 20px rgba(227,174,71,.35);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+#enter-btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 10px 26px rgba(227,174,71,.5);}
+
+/* ============ GUIDE OVERLAY ============ */
+.guide-overlay{
+  position:absolute;inset:0;z-index:55;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  background:rgba(14,13,34,.55);backdrop-filter:blur(4px);
+  opacity:0;visibility:hidden;transition:opacity .5s ease, visibility .5s;
+}
+.guide-overlay.show{opacity:1;visibility:visible;}
+.guide-card{
+  background:var(--cream);border-radius:20px;padding:26px 24px 20px;
+  width:min(92vw,420px);max-height:82vh;overflow-y:auto;
+  box-shadow:0 24px 60px rgba(0,0,0,.4);
+}
+.guide-card h2{margin:0 0 14px;font-weight:500;font-style:italic;color:var(--lavender-deep);font-size:24px;text-align:center;}
+.guide-card ul{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:12px;}
+.guide-card li{display:flex;align-items:flex-start;gap:12px;font-size:13.5px;line-height:1.5;color:var(--ink);}
+.guide-card li span{font-size:20px;flex:0 0 auto;margin-top:1px;}
+.guide-card li b{color:var(--lavender-deep);}
+#guide-close{
+  display:block;width:100%;border:none;border-radius:16px;padding:12px;
+  background:var(--gold);color:#3a2a08;font-weight:700;font-size:15px;cursor:pointer;
+  font-family:'Quicksand',sans-serif;box-shadow:0 6px 16px rgba(227,174,71,.3);
+}
+
+/* ============ CHAT ============ */
+#chat-toggle{
+  position:absolute;bottom:20px;right:20px;z-index:45;
+  width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--lavender-deep);color:#fff;font-size:19px;
+  box-shadow:0 6px 18px rgba(0,0,0,.3);
+}
+#chat-panel{
+  position:absolute;bottom:80px;right:20px;z-index:46;
+  width:min(88vw,300px);height:380px;max-height:60vh;
+  background:var(--cream);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.35);
+  display:flex;flex-direction:column;overflow:hidden;
+  transform:translateY(16px) scale(.96);opacity:0;visibility:hidden;
+  transition:all .3s ease;
+}
+#chat-panel.show{transform:translateY(0) scale(1);opacity:1;visibility:visible;}
+#chat-header{
+  background:var(--lavender-deep);color:#fff;padding:12px 14px;font-family:'Fraunces',serif;font-style:italic;
+  display:flex;align-items:center;justify-content:space-between;font-size:13.5px;
+}
+#chat-header button{background:none;border:none;color:#fff;font-size:14px;cursor:pointer;opacity:.8;}
+#chat-log{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;}
+.chat-msg{max-width:80%;padding:8px 12px;border-radius:14px;font-size:13.5px;line-height:1.4;}
+.chat-msg.user{align-self:flex-end;background:var(--gold-soft);color:#3a2a08;border-bottom-right-radius:4px;}
+.chat-msg.cat{align-self:flex-start;background:#EDE6F5;color:var(--ink);border-bottom-left-radius:4px;font-style:italic;}
+#chat-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid #e6ddc8;}
+#chat-input{flex:1;border:1px solid #ddd;border-radius:14px;padding:8px 12px;font-family:'Quicksand',sans-serif;font-size:13.5px;outline:none;}
+#chat-send{background:var(--gold);border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:14px;color:#3a2a08;}
+
+/* ============ WORLD 4: PARK WALK ============ */
+#scene-park{background:linear-gradient(180deg,#BFE0E8 0%,#DCEAC4 55%,#AFCB86 100%);}
+.park-sky{position:absolute;inset:0 0 45% 0;}
+.park-sun{position:absolute;top:8%;right:12%;width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,#FFF3C4,#F3D262 70%);box-shadow:0 0 60px 24px rgba(255,230,150,.5);}
+.park-path{position:absolute;left:0;right:0;bottom:0;height:38%;background:linear-gradient(180deg,#C9B78C,#B39F72);}
+.park-path::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(100deg,rgba(255,255,255,.06) 0 20px, transparent 20px 40px);}
+.park-trees{position:absolute;left:0;right:0;bottom:38%;height:26%;}
+.tree{position:absolute;bottom:0;width:50px;}
+.tree .trunk{position:absolute;bottom:0;left:20px;width:10px;height:36px;background:#8A6A45;}
+.tree .top{position:absolute;bottom:28px;left:0;width:50px;height:50px;border-radius:50%;background:#6F9A55;box-shadow:14px 6px 0 -6px #7CA860, -12px 8px 0 -8px #659250;}
+#leash-svg{position:absolute;inset:0;pointer-events:none;z-index:14;}
+#leash-path{fill:none;stroke:#B96B4A;stroke-width:3;stroke-linecap:round;}
+
+/* flying sky cat */
+.cat.flying{cursor:default;}
+.cat.flying .cat-leg{opacity:.5;transform:rotate(-10deg);}
+.cat.flying .cat-body{animation:flyfloat 2.2s ease-in-out infinite;}
+@keyframes flyfloat{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-6px) rotate(2deg)}}
+
+.cat.lookup .cat-head{transition:transform .5s ease;transform:translateY(-5px) rotate(-14deg);}
+.cat.lookup .cat-eye{transition:transform .5s ease;transform:translateY(-2px) scaleY(1.15);}
+
+.star-burst{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,0) 70%);animation:burst .6s ease forwards;}
+@keyframes burst{0%{transform:scale(0);opacity:1;}100%{transform:scale(3);opacity:0;}}
+
+/* ============ WORLD SWITCHER ============ */
+#switcher{
+  position:absolute;top:16px;left:50%;transform:translateX(-50%);
+  z-index:40;display:flex;gap:10px;background:rgba(20,18,40,.35);
+  backdrop-filter:blur(6px);padding:8px 12px;border-radius:22px;
+  box-shadow:0 4px 18px rgba(0,0,0,.2);
+}
+.switch-btn{
+  width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;
+  font-size:16px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.15);color:#fff;opacity:.6;transition:all .25s ease;
+}
+.switch-btn.active{opacity:1;background:var(--gold);color:#3a2a08;transform:scale(1.1);}
+.switch-btn:hover{opacity:1;}
+
+#sound-toggle{
+  position:absolute;top:20px;right:20px;z-index:40;
+  width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(20,18,40,.35);backdrop-filter:blur(6px);color:#fff;font-size:17px;
+  box-shadow:0 4px 18px rgba(0,0,0,.2);
+}
+#help-btn{
+  position:absolute;top:20px;right:70px;z-index:40;
+  width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(20,18,40,.35);backdrop-filter:blur(6px);color:#fff;font-size:16px;font-weight:700;
+  box-shadow:0 4px 18px rgba(0,0,0,.2);font-family:'Fraunces',serif;font-style:italic;
+}
+
+#toast{
+  position:absolute;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(20,18,40,.7);color:var(--cream);padding:10px 22px;border-radius:20px;
+  font-size:14px;letter-spacing:.3px;opacity:0;transition:all .6s ease;z-index:60;pointer-events:none;
+  font-style:italic;font-family:'Fraunces',serif;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ============ WORLD 1: SUNBEAM ROOM ============ */
+#scene-room{
+  background:linear-gradient(180deg,#F6EFE2 0%, #EFE0C4 55%, #E4CE9E 100%);
+}
+.room-wall{position:absolute;inset:0 0 30% 0;background:linear-gradient(160deg,#F8F1E5,#EFE2C8);}
+.room-floor{position:absolute;left:0;right:0;bottom:0;height:32%;background:linear-gradient(180deg,#D8B888,#C29F6C);}
+.window{
+  position:absolute;top:6%;right:8%;width:26%;height:44%;
+  background:linear-gradient(160deg,#BFE3E8,#8FCBD9);
+  border:14px solid #E9D9B5;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.15);
+}
+.window::before,.window::after{content:'';position:absolute;background:#E9D9B5;}
+.window::before{left:50%;top:0;bottom:0;width:10px;transform:translateX(-50%);}
+.window::after{top:50%;left:0;right:0;height:10px;transform:translateY(-50%);}
+.sunray{
+  position:absolute;top:0;right:6%;width:0;height:0;
+  border-left:200px solid transparent;border-right:40px solid transparent;
+  border-top:520px solid rgba(255,238,190,.28);
+  transform-origin:top right;filter:blur(2px);pointer-events:none;
+}
+.dustmote{position:absolute;background:rgba(255,247,220,.85);border-radius:50%;pointer-events:none;}
+
+.cushion{position:absolute;bottom:22%;border-radius:40% 40% 45% 45%;box-shadow:0 8px 18px rgba(0,0,0,.15);}
+.cushion.c1{left:6%;width:180px;height:80px;background:#C97C6D;}
+.cushion.c2{left:20%;width:130px;height:60px;background:#DDB25A;bottom:24%;}
+.plant{position:absolute;bottom:20%;width:70px;height:120px;}
+.plant.p1{left:2%;}
+.plant.p2{right:4%;bottom:2%;}
+.plant .pot{position:absolute;bottom:0;left:15px;width:40px;height:36px;background:#B96B4A;border-radius:4px 4px 10px 10px;}
+.plant .leaf{position:absolute;width:14px;height:60px;background:var(--leaf);border-radius:50% 50% 50% 0;transform-origin:bottom center;}
+.book-stack{position:absolute;bottom:20%;left:38%;width:70px;}
+.book-stack div{height:12px;border-radius:2px;margin-top:2px;box-shadow:0 2px 3px rgba(0,0,0,.15);}
+.blanket{position:absolute;bottom:20%;right:22%;width:150px;height:40px;background:#8FA9C9;border-radius:20px;box-shadow:0 6px 14px rgba(0,0,0,.15);}
+.cardbox{
+  position:absolute;bottom:20%;right:2%;width:110px;height:90px;
+  background:#C79A61;border:4px solid #A97C46;border-radius:4px;box-shadow:0 8px 16px rgba(0,0,0,.2);
+}
+.cardbox::before{content:'';position:absolute;inset:0 0 55% 0;background:#D9AE73;border-bottom:3px solid #A97C46;}
+
+.sunpatch{
+  position:absolute;width:130px;height:60px;border-radius:50%;
+  background:radial-gradient(ellipse, rgba(255,240,190,.85), rgba(255,240,190,0) 70%);
+  cursor:grab;touch-action:none;z-index:5;
+}
+.sunpatch:active{cursor:grabbing;}
+
+.pawprint{
+  position:absolute;width:10px;height:10px;background:rgba(90,70,50,.28);border-radius:50%;
+  pointer-events:none;animation:fadeout 4s ease forwards;
+}
+@keyframes fadeout{to{opacity:0;}}
+
+/* ============ WORLD 2: GARDEN ============ */
+#scene-garden{background:linear-gradient(180deg,#CFE4E0 0%, #E9E4B0 45%, #9DBB78 70%, #7FA35F 100%);}
+.garden-sun{position:absolute;top:6%;left:8%;width:90px;height:90px;border-radius:50%;
+  background:radial-gradient(circle,#FFEFB0,#F3D262 70%);box-shadow:0 0 80px 30px rgba(255,230,150,.5);}
+.grass-row{position:absolute;left:0;right:0;bottom:0;height:14%;background:repeating-linear-gradient(90deg,#6E9A52,#6E9A52 4px,#7DA85D 4px,#7DA85D 8px);}
+.hill{position:absolute;left:0;right:0;bottom:0;height:32%;background:#8FB56A;border-radius:50% 50% 0 0 / 100% 100% 0 0;transform:scaleX(1.4);}
+.garden-plot{position:absolute;left:0;right:0;bottom:6%;height:26%;cursor:pointer;}
+.flower{
+  position:absolute;bottom:0;width:26px;height:60px;transform:translate(-50%,0) scale(0);
+  transform-origin:bottom center;animation:grow 1.4s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes grow{to{transform:translate(-50%,0) scale(1);}}
+.flower .stem{position:absolute;bottom:0;left:50%;width:3px;height:100%;background:#5C8A45;transform:translateX(-50%);}
+.flower .bloom{position:absolute;top:0;left:50%;transform:translate(-50%,0);width:22px;height:22px;border-radius:50%;}
+.flower .bloom::before{content:'';position:absolute;inset:5px;border-radius:50%;background:#F6D247;}
+.f-lavender .bloom{background:#B99AD6;box-shadow:0 0 0 6px rgba(185,154,214,.35);}
+.f-sunflower .bloom{background:#F0B93E;}
+.f-sunflower .bloom::before{background:#7A4B22;}
+.f-wild .bloom{background:#EF9AB0;}
+.f-poppy .bloom{background:#D8482F;}
+
+.butterfly{position:absolute;width:14px;height:10px;pointer-events:none;}
+.butterfly .wing{position:absolute;width:9px;height:9px;background:#EFAE4E;border-radius:70% 70% 70% 0;top:0;box-shadow:0 0 4px rgba(0,0,0,.15);}
+.butterfly .wing.l{left:-8px;animation:flap .28s ease-in-out infinite alternate;}
+.butterfly .wing.r{right:-8px;transform:scaleX(-1);animation:flap .28s ease-in-out infinite alternate;}
+@keyframes flap{to{transform:scaleY(.5);}}
+.butterfly.r .wing{transform:scaleX(-1);}
+
+.garden-ui{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:20;}
+.flower-choice{
+  width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,.5);cursor:pointer;
+  box-shadow:0 4px 10px rgba(0,0,0,.2);transition:transform .2s ease;
+}
+.flower-choice.active{transform:scale(1.15);border-color:#fff;}
+.fc-lavender{background:#B99AD6;} .fc-sunflower{background:#F0B93E;} .fc-wild{background:#EF9AB0;} .fc-poppy{background:#D8482F;}
+
+.dream-bubble{
+  position:absolute;width:70px;height:70px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.9), rgba(167,139,201,.55) 70%);
+  box-shadow:0 0 30px rgba(167,139,201,.6);cursor:pointer;z-index:25;
+  animation:bob 2.4s ease-in-out infinite;
+}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+
+/* ============ WORLD 3: SKY ============ */
+#scene-sky{background:radial-gradient(ellipse at 50% 20%, #26265a 0%, var(--midnight) 55%, var(--midnight-deep) 100%);}
+#sky-canvas{position:absolute;inset:0;cursor:crosshair;}
+.sky-ui{position:absolute;top:16px;left:16px;z-index:20;color:var(--cream);font-family:'Fraunces',serif;font-style:italic;font-size:14px;opacity:.75;max-width:230px;line-height:1.5;}
+.sky-controls{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:20;}
+.sky-btn{
+  font-family:'Quicksand',sans-serif;font-weight:600;font-size:13px;
+  background:rgba(255,255,255,.12);color:var(--cream);border:1px solid rgba(255,255,255,.25);
+  border-radius:18px;padding:8px 16px;cursor:pointer;backdrop-filter:blur(4px);
+}
+.sky-btn:hover{background:rgba(255,255,255,.22);}
+
+.memory-modal{
+  position:absolute;inset:0;background:rgba(10,9,25,.6);backdrop-filter:blur(3px);
+  display:flex;align-items:center;justify-content:center;z-index:60;opacity:0;pointer-events:none;transition:opacity .3s ease;
+}
+.memory-modal.show{opacity:1;pointer-events:auto;}
+.memory-card{
+  background:var(--cream);border-radius:18px;padding:26px 24px;width:min(90vw,340px);
+  box-shadow:0 20px 50px rgba(0,0,0,.4);text-align:center;
+}
+.memory-card h3{margin:0 0 6px;font-weight:500;font-style:italic;color:var(--lavender-deep);}
+.memory-card p{margin:0 0 14px;font-size:13px;color:#6b6456;}
+.memory-card textarea{
+  width:100%;height:70px;border-radius:10px;border:1px solid #ddd;padding:10px;
+  font-family:'Quicksand',sans-serif;font-size:14px;resize:none;outline:none;
+}
+.memory-card .row{display:flex;gap:8px;margin-top:12px;}
+.memory-card button{
+  flex:1;border:none;border-radius:14px;padding:10px;font-weight:700;cursor:pointer;font-family:'Quicksand',sans-serif;
+}
+.mem-save{background:var(--gold);color:#3a2a08;}
+.mem-cancel{background:#eee;color:#555;}
+
+/* ============ CAT ============ */
+.cat{position:absolute;width:110px;height:80px;transform-origin:50% 90%;z-index:15;cursor:pointer;}
+.cat-shadow{position:absolute;bottom:-4px;left:15px;width:75px;height:14px;background:rgba(0,0,0,.18);border-radius:50%;filter:blur(2px);}
+.cat-part{position:absolute;background:var(--fur);}
+.cat-tail{
+  width:14px;height:56px;border-radius:10px;left:2px;bottom:14px;
+  transform-origin:bottom center;transform:rotate(25deg);
+  animation:tailsway 2.6s ease-in-out infinite;
+}
+@keyframes tailsway{0%,100%{transform:rotate(20deg)}50%{transform:rotate(40deg)}}
+.cat-body{width:64px;height:42px;border-radius:50% 55% 45% 45%;left:24px;bottom:8px;box-shadow:inset -6px -4px 10px rgba(0,0,0,.35);}
+.cat-head{width:38px;height:34px;border-radius:50% 50% 46% 46%;left:66px;bottom:30px;box-shadow:inset -4px -3px 8px rgba(0,0,0,.35);}
+.cat-ear{width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:16px solid var(--fur);position:absolute;bottom:52px;}
+.cat-ear.l{left:68px;transform:rotate(-18deg);}
+.cat-ear.r{left:88px;transform:rotate(18deg);}
+.cat-eye{position:absolute;width:7px;height:8px;background:#E7CB56;border-radius:50%;bottom:38px;box-shadow:0 0 3px rgba(230,200,80,.7);transition:transform .1s ease;}
+.cat-eye.l{left:73px;} .cat-eye.r{left:86px;}
+.cat-eye::after{content:'';position:absolute;inset:1px 2.5px;background:#000;border-radius:50%;}
+.blink .cat-eye{animation:blink 0.22s ease;}
+@keyframes blink{50%{transform:scaleY(.1);}}
+.cat-leg{width:9px;height:20px;background:var(--fur);border-radius:0 0 4px 4px;position:absolute;bottom:0;}
+.cat-leg.fl{left:32px;} .cat-leg.fr{left:46px;} .cat-leg.bl{left:60px;} .cat-leg.br{left:74px;}
+.cat-whisk{position:absolute;height:1px;width:16px;background:rgba(255,255,255,.4);bottom:38px;}
+.cat-whisk.l1{left:52px;transform:rotate(4deg);} .cat-whisk.l2{left:52px;bottom:34px;transform:rotate(-3deg);}
+.cat-whisk.r1{left:100px;transform:rotate(-4deg);} .cat-whisk.r2{left:100px;bottom:34px;transform:rotate(3deg);}
+
+.cat.idle .cat-body{animation:breathe 3.2s ease-in-out infinite;}
+@keyframes breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.05)}}
+.cat.walking{animation:bobwalk .5s ease-in-out infinite;}
+@keyframes bobwalk{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.cat.walking .cat-leg.fl,.cat.walking .cat-leg.br{animation:legswing .5s ease-in-out infinite;}
+.cat.walking .cat-leg.fr,.cat.walking .cat-leg.bl{animation:legswing .5s ease-in-out infinite reverse;}
+@keyframes legswing{0%,100%{transform:rotate(18deg)}50%{transform:rotate(-18deg)}}
+
+.cat.sleeping{transform:scale(1) rotate(0deg) !important;}
+.cat.sleeping .cat-body{border-radius:50%;width:78px;height:48px;left:18px;animation:sleepbreathe 3.6s ease-in-out infinite;}
+.cat.sleeping .cat-head{bottom:26px;left:56px;}
+.cat.sleeping .cat-ear,.cat.sleeping .cat-leg,.cat.sleeping .cat-whisk{opacity:.3;}
+.cat.sleeping .cat-eye{transform:scaleY(.15);}
+.cat.sleeping .cat-tail{transform:rotate(70deg);}
+@keyframes sleepbreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+
+.cat.stretching .cat-body{transform:scaleX(1.35) translateX(6px);transition:transform .6s ease;}
+.cat.stretching .cat-leg.fl,.cat.stretching .cat-leg.fr{transform:scaleY(1.4);transition:transform .6s ease;}
+
+.cat.zoomies{animation:zoom .35s linear infinite;}
+@keyframes zoom{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3px) rotate(-2deg)}75%{transform:translateY(-3px) rotate(2deg)}}
+
+.cat.touched .cat-ear{transform:rotate(-32deg) scale(.85);}
+.cat.touched .cat-ear.r{transform:rotate(32deg) scale(.85);}
+.cat.nuzzle .cat-head{animation:nuzzlehead .7s ease;}
+@keyframes nuzzlehead{0%,100%{transform:translate(0,0)}40%{transform:translate(-6px,4px) rotate(-6deg)}70%{transform:translate(4px,2px) rotate(4deg)}}
+.cat.nuzzle .cat-eye{transform:scaleY(.3);}
+
+.zzz{position:absolute;font-family:'Fraunces',serif;font-style:italic;color:#7C60A0;font-size:16px;
+  opacity:0;animation:zfloat 3s ease-in infinite;pointer-events:none;}
+@keyframes zfloat{0%{opacity:0;transform:translate(0,0)}20%{opacity:.8}100%{opacity:0;transform:translate(20px,-40px)}}
+
+.hidden-cat{opacity:0 !important;}
+
+@media (max-width:640px){
+  .window{width:34%;height:32%;}
+  .cushion.c1{width:120px;height:56px;}
+  .plant{width:50px;height:80px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="intro">
+    <div class="paw">🐾</div>
+    <h1>Where Cats Dream</h1>
+    <p>Somewhere between sunlight, flowers, and stars, a small black cat is wandering. Stay a while and see where she leads you.</p>
+    <button id="enter-btn">Step inside</button>
+  </div>
+
+  <div id="guide" class="guide-overlay">
+    <div class="guide-card">
+      <h2>How to visit</h2>
+      <ul>
+        <li><span>🐾</span><div><b>Touch her</b> — tap or click the cat anywhere. She might dart away startled, or lean in and purr. Her mood is different every time.</div></li>
+        <li><span>☀️</span><div><b>Move the sunlight</b> — drag the glowing patch in the Sunbeam Room. She'll wander toward it and may nap there.</div></li>
+        <li><span>🌸</span><div><b>Plant a flower, make a wish</b> — in the Garden, pick a bloom and tap the grass. You'll be asked to leave a little wish with it — everything is remembered.</div></li>
+        <li><span>💤</span><div><b>Wait quietly</b> — if you leave the garden idle, she'll curl up and a dream bubble will rise above her. Tap it to enter the sky.</div></li>
+        <li><span>✨</span><div><b>Hunt stars together</b> — every flower becomes a star. She flies alongside you — tap a star to catch it, then leave your name and a message written in light.</div></li>
+        <li><span>🐾</span><div><b>Walk with her</b> — in the Park, you're walking her on a leash, watching her glance up at you now and then.</div></li>
+        <li><span>💬</span><div><b>Talk to her</b> — the chat bubble in the corner lets you say anything. She's a cat, though — expect a moody, honest reply.</div></li>
+      </ul>
+      <button id="guide-close">Begin</button>
+    </div>
+  </div>
+
+  <div id="switcher">
+    <button class="switch-btn active" data-scene="room" title="Sunbeam Room">☀️</button>
+    <button class="switch-btn" data-scene="garden" title="Lavender Garden">🌸</button>
+    <button class="switch-btn" data-scene="sky" title="Star Hunt">✨</button>
+    <button class="switch-btn" data-scene="park" title="Park Walk">🐾</button>
+  </div>
+  <button id="sound-toggle" title="Toggle sound">🔈</button>
+  <button id="help-btn" title="How to visit">?</button>
+  <button id="chat-toggle" title="Talk to her">💬</button>
+  <div id="toast"></div>
+
+  <!-- WORLD 1 -->
+  <div id="scene-room" class="scene active">
+    <div class="room-wall"></div>
+    <div class="room-floor"></div>
+    <div class="window"></div>
+    <div class="sunray" style="right:10%;transform:rotate(6deg);"></div>
+    <div class="sunray" style="right:20%;transform:rotate(-2deg);opacity:.6"></div>
+    <div class="cushion c1"></div>
+    <div class="cushion c2"></div>
+    <div class="plant p1"><div class="pot"></div></div>
+    <div class="plant p2"><div class="pot"></div></div>
+    <div class="book-stack">
+      <div style="background:#B96B4A;width:70px;"></div>
+      <div style="background:#7C9A6E;width:60px;"></div>
+      <div style="background:#DDB25A;width:65px;"></div>
+    </div>
+    <div class="blanket"></div>
+    <div class="cardbox"></div>
+    <div class="sunpatch" id="sunpatch1" style="top:30%;left:30%;"></div>
+    <div id="room-cat-layer"></div>
+    <div id="room-dust"></div>
+  </div>
+
+  <!-- WORLD 2 -->
+  <div id="scene-garden" class="scene">
+    <div class="garden-sun"></div>
+    <div class="hill"></div>
+    <div class="grass-row"></div>
+    <div class="garden-plot" id="garden-plot"></div>
+    <div id="butterfly-layer"></div>
+    <div id="garden-cat-layer"></div>
+    <div class="garden-ui">
+      <div class="flower-choice fc-lavender active" data-type="lavender" title="Lavender"></div>
+      <div class="flower-choice fc-sunflower" data-type="sunflower" title="Sunflower"></div>
+      <div class="flower-choice fc-wild" data-type="wild" title="Wildflower"></div>
+      <div class="flower-choice fc-poppy" data-type="poppy" title="Poppy"></div>
+    </div>
+  </div>
+
+  <!-- WORLD 3: STAR HUNT -->
+  <div id="scene-sky" class="scene">
+    <canvas id="sky-canvas"></canvas>
+    <div id="sky-cat-layer"></div>
+    <div class="sky-ui" id="sky-hint">Chase the stars together. Tap one to catch it, then leave your name and a message written in light.</div>
+    <div class="sky-controls">
+      <span class="sky-btn" id="star-counter" style="pointer-events:none;">0 stars caught</span>
+    </div>
+  </div>
+
+  <!-- WORLD 4: PARK WALK -->
+  <div id="scene-park" class="scene">
+    <div class="park-sky"></div>
+    <div class="park-sun"></div>
+    <div class="park-trees" id="park-trees"></div>
+    <div class="park-path"></div>
+    <svg id="leash-svg"><path id="leash-path" d="" /></svg>
+    <div id="park-cat-layer"></div>
+    <div class="sky-ui" id="park-hint" style="color:var(--ink);opacity:.7;">Walking beside you. Sometimes she looks up to check you're still there.</div>
+  </div>
+
+  <div class="memory-modal" id="input-modal">
+    <div class="memory-card">
+      <h3 id="input-title">Attach a memory</h3>
+      <p id="input-sub">Leave a wish, a memory, or something comforting.</p>
+      <input type="text" id="input-name" maxlength="24" placeholder="Your name" style="display:none;width:100%;border-radius:10px;border:1px solid #ddd;padding:9px 10px;font-family:'Quicksand',sans-serif;font-size:14px;outline:none;margin-bottom:8px;box-sizing:border-box;">
+      <textarea id="input-text" maxlength="180" placeholder="Write here..."></textarea>
+      <div class="row">
+        <button class="mem-cancel" id="input-cancel">Not now</button>
+        <button class="mem-save" id="input-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="chat-panel">
+    <div id="chat-header">
+      <span>She's listening... maybe.</span>
+      <button id="chat-close">✕</button>
+    </div>
+    <div id="chat-log"></div>
+    <div id="chat-input-row">
+      <input type="text" id="chat-input" maxlength="120" placeholder="Say something to her...">
+      <button id="chat-send">➤</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- STATE / PERSISTENCE ---------- */
+const STORAGE_KEY = "whereCatsDream.v1";
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { flowers:[], constellations:[], stars:[], visits:0 };
+}
+let state = loadState();
+state.visits = (state.visits||0) + 1;
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+/* ---------- TOAST ---------- */
+const toastEl = document.getElementById("toast");
+let toastTimer;
+function toast(msg, dur=3200){
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toastEl.classList.remove("show"), dur);
+}
+
+/* ---------- GENERIC INPUT MODAL ---------- */
+const inputModal = document.getElementById("input-modal");
+const inputTitle = document.getElementById("input-title");
+const inputSub = document.getElementById("input-sub");
+const inputName = document.getElementById("input-name");
+const inputText = document.getElementById("input-text");
+let inputModalCallback = null;
+function openInputModal({title, sub, needName=false, nameVal="", textVal="", placeholder="Write here...", onSave}){
+  inputTitle.textContent = title;
+  inputSub.textContent = sub||"";
+  inputName.style.display = needName ? "block" : "none";
+  inputName.value = nameVal;
+  inputText.value = textVal;
+  inputText.placeholder = placeholder;
+  inputModalCallback = onSave;
+  inputModal.classList.add("show");
+  setTimeout(()=> (needName?inputName:inputText).focus(), 50);
+}
+document.getElementById("input-cancel").addEventListener("click", ()=>inputModal.classList.remove("show"));
+document.getElementById("input-save").addEventListener("click", ()=>{
+  inputModal.classList.remove("show");
+  if(inputModalCallback) inputModalCallback({ name: inputName.value.trim(), text: inputText.value.trim() });
+});
+
+/* ---------- INTRO + GUIDE ---------- */
+const guideEl = document.getElementById("guide");
+document.getElementById("enter-btn").addEventListener("click", ()=>{
+  document.getElementById("intro").classList.add("hide");
+  startAmbience();
+  setTimeout(()=>{ guideEl.classList.add("show"); }, 500);
+});
+document.getElementById("help-btn").addEventListener("click", ()=>guideEl.classList.add("show"));
+document.getElementById("guide-close").addEventListener("click", ()=>{
+  guideEl.classList.remove("show");
+  if(state.visits > 1){
+    setTimeout(()=>toast("Welcome back."), 500);
+  }
+});
+
+/* ---------- SCENE SWITCHING ---------- */
+const scenes = {
+  room: document.getElementById("scene-room"),
+  garden: document.getElementById("scene-garden"),
+  sky: document.getElementById("scene-sky"),
+  park: document.getElementById("scene-park"),
+};
+const switchBtns = document.querySelectorAll(".switch-btn");
+function goTo(name){
+  Object.keys(scenes).forEach(k=>scenes[k].classList.toggle("active", k===name));
+  switchBtns.forEach(b=>b.classList.toggle("active", b.dataset.scene===name));
+  if(name==="sky") requestAnimationFrame(drawSky);
+}
+switchBtns.forEach(b=>b.addEventListener("click", ()=>goTo(b.dataset.scene)));
+
+/* ---------- SOUND (soft synthesized ambience, no external files) ---------- */
+let audioCtx, ambienceNodes=[], muted=true;
+function startAmbience(){
+  if(audioCtx) return;
+  try{
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  }catch(e){ return; }
+}
+function makePurr(){
+  if(!audioCtx || muted) return;
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = "sine"; osc.frequency.value = 90;
+  const lfo = audioCtx.createOscillator();
+  lfo.frequency.value = 22; const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 6;
+  lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.025, now+0.5);
+  gain.gain.linearRampToValueAtTime(0, now+2.6);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); lfo.start(); osc.stop(now+2.7); lfo.stop(now+2.7);
+}
+function birdChirp(){
+  if(!audioCtx || muted) return;
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type="sine";
+  const base = 1600+Math.random()*800;
+  osc.frequency.setValueAtTime(base, now);
+  osc.frequency.exponentialRampToValueAtTime(base*1.4, now+0.08);
+  osc.frequency.exponentialRampToValueAtTime(base*0.8, now+0.16);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(0.02, now+0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now+0.2);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); osc.stop(now+0.22);
+}
+setInterval(()=>{ if(Math.random()<0.35) birdChirp(); }, 4200);
+
+const soundBtn = document.getElementById("sound-toggle");
+soundBtn.addEventListener("click", ()=>{
+  muted = !muted;
+  soundBtn.textContent = muted ? "🔈" : "🔊";
+  if(!muted && audioCtx && audioCtx.state==="suspended") audioCtx.resume();
+});
+
+/* ---------- DUST MOTES (room) ---------- */
+const dustLayer = document.getElementById("room-dust");
+for(let i=0;i<18;i++){
+  const d = document.createElement("div");
+  d.className="dustmote";
+  const size = 2+Math.random()*3;
+  d.style.width=d.style.height=size+"px";
+  d.style.left = Math.random()*90+"%";
+  d.style.top = Math.random()*70+"%";
+  d.style.animation = `floatdust ${8+Math.random()*8}s ease-in-out infinite`;
+  d.style.animationDelay = (-Math.random()*8)+"s";
+  dustLayer.appendChild(d);
+}
+const styleTag = document.createElement("style");
+styleTag.textContent = `@keyframes floatdust{0%,100%{transform:translate(0,0);opacity:.3}50%{transform:translate(${8}px,-18px);opacity:.9}}`;
+document.head.appendChild(styleTag);
+
+/* ---------- SUNPATCH DRAG ---------- */
+const sunpatch = document.getElementById("sunpatch1");
+let dragging=false, dragOffset={x:0,y:0};
+function ptr(e){ return e.touches? e.touches[0] : e; }
+sunpatch.addEventListener("pointerdown", (e)=>{
+  dragging=true;
+  const r = sunpatch.getBoundingClientRect();
+  dragOffset.x = e.clientX - r.left; dragOffset.y = e.clientY - r.top;
+  sunpatch.setPointerCapture(e.pointerId);
+});
+sunpatch.addEventListener("pointermove", (e)=>{
+  if(!dragging) return;
+  const parent = sunpatch.parentElement.getBoundingClientRect();
+  let x = e.clientX - parent.left - dragOffset.x;
+  let y = e.clientY - parent.top - dragOffset.y;
+  sunpatch.style.left = x+"px"; sunpatch.style.top = y+"px";
+});
+sunpatch.addEventListener("pointerup", ()=>{ dragging=false; });
+
+/* ============================================================
+   CAT ENGINE — reusable for room + garden
+   ============================================================ */
+function buildCatDOM(){
+  const wrap = document.createElement("div");
+  wrap.className = "cat idle";
+  wrap.innerHTML = `
+    <div class="cat-shadow"></div>
+    <div class="cat-part cat-tail"></div>
+    <div class="cat-part cat-leg bl"></div>
+    <div class="cat-part cat-leg br"></div>
+    <div class="cat-part cat-body"></div>
+    <div class="cat-part cat-leg fl"></div>
+    <div class="cat-part cat-leg fr"></div>
+    <div class="cat-ear l"></div>
+    <div class="cat-ear r"></div>
+    <div class="cat-part cat-head"></div>
+    <div class="cat-eye l"></div>
+    <div class="cat-eye r"></div>
+    <div class="cat-whisk l1"></div>
+    <div class="cat-whisk l2"></div>
+    <div class="cat-whisk r1"></div>
+    <div class="cat-whisk r2"></div>
+  `;
+  return wrap;
+}
+
+class Cat {
+  constructor(layerEl, bounds, opts={}){
+    this.el = buildCatDOM();
+    this.layer = layerEl;
+    this.layer.appendChild(this.el);
+    this.bounds = bounds; // {minX,maxX,groundY}
+    this.x = bounds.minX + (bounds.maxX-bounds.minX)*0.4;
+    this.facing = 1;
+    this.state = "idle";
+    this.opts = opts;
+    this.idleSince = Date.now();
+    this.place();
+    this.el.addEventListener("click", ()=>this.onClick());
+    this.loop();
+    this.blinkLoop();
+  }
+  place(){
+    this.el.style.left = this.x+"px";
+    this.el.style.bottom = this.bounds.groundY+"px";
+    this.el.style.transform = `scaleX(${this.facing})`;
+  }
+  setState(s){
+    this.el.classList.remove("idle","walking","stretching","sleeping","zoomies");
+    this.state = s;
+    this.el.classList.add(s);
+    if(s!=="sleeping"){ this.removeZzz(); }
+  }
+  removeZzz(){
+    this.zzzTimer && clearInterval(this.zzzTimer);
+  }
+  addPawprints(){
+    if(!this.opts.pawprintLayer) return;
+    const p = document.createElement("div");
+    p.className="pawprint";
+    p.style.left = (this.x+30)+"px";
+    p.style.bottom = (this.bounds.groundY+4)+"px";
+    this.opts.pawprintLayer.appendChild(p);
+    setTimeout(()=>p.remove(), 4200);
+  }
+  walkTo(targetX, cb){
+    this.setState("walking");
+    this.facing = targetX > this.x ? 1 : -1;
+    const dur = Math.abs(targetX-this.x)*12;
+    const start = this.x, startTime = performance.now();
+    const step = (t)=>{
+      const p = Math.min(1,(t-startTime)/dur);
+      this.x = start + (targetX-start)*p;
+      this.el.style.left = this.x+"px";
+      this.el.style.transform = `scaleX(${this.facing})`;
+      if(Math.random()<0.04) this.addPawprints();
+      if(p<1) requestAnimationFrame(step);
+      else { this.setState("idle"); cb && cb(); }
+    };
+    requestAnimationFrame(step);
+  }
+  stretch(cb){
+    this.setState("stretching");
+    setTimeout(()=>{ this.setState("idle"); cb && cb(); }, 1400);
+  }
+  sleep(){
+    this.setState("sleeping");
+    this.zzzTimer = setInterval(()=>{
+      const z = document.createElement("div");
+      z.className="zzz"; z.textContent="z";
+      z.style.left = (this.x+60)+"px";
+      z.style.bottom = (this.bounds.groundY+40)+"px";
+      this.layer.appendChild(z);
+      setTimeout(()=>z.remove(),3000);
+    }, 1400);
+    this.opts.onSleep && this.opts.onSleep(this);
+  }
+  wake(){
+    this.removeZzz();
+    this.setState("idle");
+  }
+  zoomies(){
+    this.setState("zoomies");
+    let bounces = 0;
+    const go = ()=>{
+      const target = this.bounds.minX + Math.random()*(this.bounds.maxX-this.bounds.minX);
+      this.facing = target>this.x?1:-1;
+      const dur = 260;
+      const start=this.x, t0=performance.now();
+      const step=(t)=>{
+        const p=Math.min(1,(t-t0)/dur);
+        this.x = start+(target-start)*p;
+        this.el.style.left=this.x+"px";
+        this.el.style.transform=`scaleX(${this.facing})`;
+        if(p<1) requestAnimationFrame(step);
+        else { bounces++; if(bounces<5) go(); else this.setState("idle"); }
+      };
+      requestAnimationFrame(step);
+    };
+    go();
+  }
+  onClick(){
+    if(this.state==="sleeping"){
+      this.wake();
+      toast("Mrrp? ...she stretches awake.");
+      return;
+    }
+    if(this.state==="walking" || this.state==="zoomies") return;
+    const roll = Math.random();
+    if(roll < 0.55){
+      // startled hop away
+      this.setState("idle");
+      this.el.classList.add("touched");
+      const dir = Math.random()<0.5 ? -1 : 1;
+      let target = this.x + dir*(50+Math.random()*70);
+      target = Math.max(this.bounds.minX, Math.min(this.bounds.maxX, target));
+      this.facing = target > this.x ? 1 : -1;
+      this.el.style.transform = `scaleX(${this.facing})`;
+      const start = this.x, t0 = performance.now(), dur=340;
+      const hop = (t)=>{
+        const p = Math.min(1,(t-t0)/dur);
+        const arc = Math.sin(p*Math.PI)*14;
+        this.x = start + (target-start)*p;
+        this.el.style.left = this.x+"px";
+        this.el.style.bottom = (this.bounds.groundY+arc)+"px";
+        if(p<1) requestAnimationFrame(hop);
+        else { this.el.style.bottom = this.bounds.groundY+"px"; this.el.classList.remove("touched"); this.idleSince=Date.now(); }
+      };
+      requestAnimationFrame(hop);
+      toast("She darts away, startled!");
+    } else {
+      // affectionate lean-in
+      this.el.classList.add("nuzzle");
+      toast("She leans in and purrs.");
+      makePurr();
+      setTimeout(()=>this.el.classList.remove("nuzzle"), 700);
+    }
+  }
+  approachPoint(px){
+    if(this.state!=="idle") return;
+    const target = Math.max(this.bounds.minX, Math.min(this.bounds.maxX, px-40));
+    this.walkTo(target, ()=>{ this.idleSince=Date.now(); });
+  }
+  blinkLoop(){
+    const go = ()=>{
+      if(this.state!=="sleeping"){
+        this.el.classList.add("blink");
+        setTimeout(()=>this.el.classList.remove("blink"), 220);
+      }
+      setTimeout(go, 2500+Math.random()*3500);
+    };
+    setTimeout(go, 2000+Math.random()*2000);
+  }
+  loop(){
+    // main behavior brain
+    const decide = ()=>{
+      if(this.state==="sleeping"){ setTimeout(decide, 4000); return; }
+      const idleFor = Date.now()-this.idleSince;
+      const roll = Math.random();
+      if(this.opts.idleSleepAfter && idleFor > this.opts.idleSleepAfter){
+        this.sleep();
+        return;
+      }
+      if(roll<0.28){
+        const target = this.bounds.minX + Math.random()*(this.bounds.maxX-this.bounds.minX);
+        this.walkTo(target, ()=>{ this.idleSince=Date.now(); setTimeout(decide, 1200+Math.random()*2000); });
+        return;
+      } else if(roll<0.42){
+        this.stretch(()=>{ setTimeout(decide, 1800); });
+        return;
+      } else if(roll<0.5 && this.opts.allowZoomies){
+        this.zoomies();
+        setTimeout(decide, 2400);
+        return;
+      } else if(roll<0.58 && this.opts.allowSleep){
+        this.sleep();
+        return;
+      }
+      setTimeout(decide, 2200+Math.random()*3000);
+    };
+    setTimeout(decide, 2000);
+  }
+}
+
+/* ---------- ROOM CAT ---------- */
+const roomLayer = document.getElementById("room-cat-layer");
+const roomCat = new Cat(roomLayer, {minX:20, maxX:520, groundY: window.innerHeight*0.14}, {
+  allowZoomies:true, allowSleep:true, idleSleepAfter: 22000, pawprintLayer: roomLayer
+});
+// sunpatch attraction check
+setInterval(()=>{
+  const sp = sunpatch.getBoundingClientRect();
+  const cr = roomCat.el.getBoundingClientRect();
+  const overlap = !(sp.right<cr.left||sp.left>cr.right||sp.bottom<cr.top||sp.top>cr.bottom);
+  if(overlap && roomCat.state==="idle" && Math.random()<0.15){
+    roomCat.sleep();
+  }
+}, 2000);
+// occasional hide in box
+setInterval(()=>{
+  if(Math.random()<0.08 && roomCat.state==="idle"){
+    roomCat.el.classList.add("hidden-cat");
+    toast("She's hiding in the box...");
+    setTimeout(()=>{ roomCat.el.classList.remove("hidden-cat"); }, 5000);
+  }
+}, 15000);
+
+/* ---------- GARDEN ---------- */
+const gardenLayer = document.getElementById("garden-cat-layer");
+const gardenPlot = document.getElementById("garden-plot");
+let currentFlowerType = "lavender";
+document.querySelectorAll(".flower-choice").forEach(el=>{
+  el.addEventListener("click", ()=>{
+    document.querySelectorAll(".flower-choice").forEach(x=>x.classList.remove("active"));
+    el.classList.add("active");
+    currentFlowerType = el.dataset.type;
+  });
+});
+
+function plantFlower(xPct, type, persist=true, wish=""){
+  const f = document.createElement("div");
+  f.className = "flower f-"+type;
+  f.style.left = xPct+"%";
+  f.innerHTML = `<div class="stem"></div><div class="bloom"></div>`;
+  if(wish) f.title = wish;
+  gardenPlot.appendChild(f);
+  if(persist){
+    state.flowers.push({x:xPct, type:type, t:Date.now(), wish:wish});
+    saveState();
+  }
+}
+gardenPlot.addEventListener("click", (e)=>{
+  const r = gardenPlot.getBoundingClientRect();
+  const xPct = Math.max(2,Math.min(96, ((e.clientX - r.left)/r.width)*100));
+  openInputModal({
+    title:"Make a wish",
+    sub:"Attach a little wish or note to this flower, for her.",
+    placeholder:"I wish...",
+    onSave:({text})=>{
+      plantFlower(xPct, currentFlowerType, true, text);
+      toast(text ? "A wish takes root with the flower." : "A new flower takes root.");
+    }
+  });
+});
+// restore flowers
+(state.flowers||[]).forEach(f=>plantFlower(f.x, f.type, false, f.wish));
+
+// butterflies
+const butterflyLayer = document.getElementById("butterfly-layer");
+function spawnButterfly(){
+  const b = document.createElement("div");
+  b.className="butterfly";
+  b.innerHTML = `<div class="wing l"></div><div class="wing r"></div>`;
+  let x = Math.random()*window.innerWidth, y = window.innerHeight*(0.3+Math.random()*0.3);
+  butterflyLayer.appendChild(b);
+  let alive = true;
+  setTimeout(()=>{ alive=false; b.remove(); }, 20000+Math.random()*10000);
+  const fly = ()=>{
+    if(!alive) return;
+    x += (Math.random()-0.5)*80;
+    y += (Math.random()-0.5)*50;
+    x = Math.max(20,Math.min(window.innerWidth-20,x));
+    y = Math.max(60,Math.min(window.innerHeight*0.6,y));
+    b.style.left=x+"px"; b.style.top=y+"px";
+    b.classList.toggle("r", Math.random()<0.5);
+    setTimeout(fly, 900+Math.random()*700);
+  };
+  fly();
+}
+for(let i=0;i<3;i++) spawnButterfly();
+setInterval(()=>{ if(document.querySelectorAll(".butterfly").length<5) spawnButterfly(); }, 9000);
+
+const gardenCat = new Cat(gardenLayer, {minX:20, maxX: window.innerWidth-140, groundY: window.innerHeight*0.10}, {
+  allowZoomies:true, allowSleep:false, idleSleepAfter: null,
+  onSleep: null
+});
+
+// chest nap event on idle in garden -> dream bubble
+let gardenIdleTimer, dreamBubble=null;
+function resetGardenIdle(){
+  clearTimeout(gardenIdleTimer);
+  if(scenes.garden.classList.contains("active")){
+    gardenIdleTimer = setTimeout(triggerChestNap, 26000);
+  }
+}
+["mousemove","touchstart","click","scroll"].forEach(evt=>window.addEventListener(evt, resetGardenIdle));
+setInterval(()=>{ if(scenes.garden.classList.contains("active") && !gardenIdleTimer) resetGardenIdle(); }, 3000);
+
+function triggerChestNap(){
+  if(!scenes.garden.classList.contains("active")) return;
+  gardenCat.walkTo(window.innerWidth*0.46, ()=>{
+    gardenCat.sleep();
+    toast("She curls up and settles in.");
+    spawnDreamBubble();
+  });
+}
+function spawnDreamBubble(){
+  if(dreamBubble) return;
+  dreamBubble = document.createElement("div");
+  dreamBubble.className = "dream-bubble";
+  dreamBubble.style.left = (gardenCat.x+30)+"px";
+  dreamBubble.style.bottom = (gardenCat.bounds.groundY+70)+"px";
+  gardenLayer.appendChild(dreamBubble);
+  dreamBubble.addEventListener("click", ()=>{
+    goTo("sky");
+    toast("The dream opens above her.");
+  });
+}
+resetGardenIdle();
+
+/* ============================================================
+   SKY WORLD — star hunt
+   ============================================================ */
+const canvas = document.getElementById("sky-canvas");
+const ctx = canvas.getContext("2d");
+function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+const flowerColors = { lavender:"#C9AEE8", sunflower:"#F3D262", wild:"#F3B9C8", poppy:"#E98C77" };
+const starCounterEl = document.getElementById("star-counter");
+
+function buildStars(){
+  const list = [];
+  (state.flowers||[]).forEach((f,i)=>{
+    list.push({
+      id: "flower-"+i,
+      x: (0.08 + (f.x/100)*0.84) * canvas.width + (Math.sin(i*13.1)*40),
+      y: 0.1*canvas.height + ((i*37)%(canvas.height*0.6)),
+      vx:(Math.random()-0.5)*0.15, vy:(Math.random()-0.5)*0.1,
+      color: flowerColors[f.type]||"#F3D262",
+      r: 2.6+Math.random()*1.6,
+      fromFlower:true, caught:false, name:null, message:null
+    });
+  });
+  (state.stars||[]).forEach((s,i)=>{
+    list.push({
+      id:"wish-"+i, x:s.x*canvas.width, y:s.y*canvas.height,
+      vx:(Math.random()-0.5)*0.15, vy:(Math.random()-0.5)*0.1,
+      color:"#EDEBFF", r:2.8, caught:true, name:s.name, message:s.message
+    });
+  });
+  return list;
+}
+let stars = buildStars();
+let twinkle = stars.map(()=>Math.random()*Math.PI*2);
+let shootingStars = [];
+let caughtCount = (state.stars||[]).length;
+starCounterEl.textContent = caughtCount+" stars caught";
+
+function drawSky(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const grad = ctx.createRadialGradient(canvas.width*0.5,canvas.height*0.15,10,canvas.width*0.5,canvas.height*0.2,canvas.width*0.6);
+  grad.addColorStop(0,"rgba(124,96,160,0.18)");
+  grad.addColorStop(1,"rgba(124,96,160,0)");
+  ctx.fillStyle = grad; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  const t = Date.now()/700;
+  stars.forEach((s,i)=>{
+    // gentle drift
+    s.x += s.vx; s.y += s.vy;
+    if(s.x<20||s.x>canvas.width-20) s.vx*=-1;
+    if(s.y<20||s.y>canvas.height*0.7) s.vy*=-1;
+
+    const tw = 0.55+0.45*Math.sin(t+twinkle[i]);
+    ctx.beginPath();
+    ctx.fillStyle = s.color;
+    ctx.globalAlpha = s.caught ? 1 : tw;
+    ctx.arc(s.x, s.y, s.r*(s.fromFlower?1.4:1)*(s.caught?1.3:1), 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    if(s.caught){
+      ctx.beginPath();
+      ctx.strokeStyle="rgba(255,255,255,.4)";
+      ctx.arc(s.x,s.y,s.r*2.6,0,Math.PI*2);
+      ctx.stroke();
+    }
+  });
+
+  shootingStars = shootingStars.filter(sh=>sh.life>0);
+  shootingStars.forEach(sh=>{
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(255,255,255,${sh.life})`;
+    ctx.lineWidth=2;
+    ctx.moveTo(sh.x,sh.y);
+    ctx.lineTo(sh.x-sh.vx*6, sh.y-sh.vy*6);
+    ctx.stroke();
+    sh.x+=sh.vx; sh.y+=sh.vy; sh.life-=0.02;
+  });
+
+  updateFlyingCat();
+  if(scenes.sky.classList.contains("active")) requestAnimationFrame(drawSky);
+}
+function spawnShootingStar(){
+  shootingStars.push({
+    x: Math.random()*canvas.width*0.6+canvas.width*0.2, y: Math.random()*canvas.height*0.2,
+    vx: 6+Math.random()*4, vy: 3+Math.random()*2, life:1
+  });
+}
+setInterval(()=>{ if(scenes.sky.classList.contains("active") && Math.random()<0.5) spawnShootingStar(); }, 5000);
+
+function nearestStar(x,y){
+  let best=null, bd=28;
+  stars.forEach(s=>{
+    const d = Math.hypot(s.x-x,s.y-y);
+    if(d<bd){ bd=d; best=s; }
+  });
+  return best;
+}
+function burstAt(x,y){
+  const b = document.createElement("div");
+  b.className="star-burst";
+  b.style.width=b.style.height="10px";
+  b.style.left=(x-5)+"px"; b.style.top=(y-5)+"px";
+  document.getElementById("scene-sky").appendChild(b);
+  setTimeout(()=>b.remove(), 650);
+}
+
+canvas.addEventListener("click", (e)=>{
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX-rect.left, y = e.clientY-rect.top;
+  const hit = nearestStar(x,y);
+  flyingCat && flyingCat.chase(x,y);
+  if(hit && !hit.caught){
+    burstAt(hit.x,hit.y);
+    openInputModal({
+      title:"You caught a star!",
+      sub:"Leave your name and a message written in light.",
+      needName:true,
+      placeholder:"Write your message...",
+      onSave:({name,text})=>{
+        hit.caught = true;
+        hit.name = name || "Someone";
+        hit.message = text;
+        caughtCount++;
+        starCounterEl.textContent = caughtCount+" stars caught";
+        if(hit.fromFlower){
+          const idx = parseInt(hit.id.split("-")[1]);
+          if(state.flowers[idx]){ state.flowers[idx].starName = hit.name; state.flowers[idx].starMessage = hit.message; }
+        } else {
+          state.stars.push({ x: hit.x/canvas.width, y: hit.y/canvas.height, name: hit.name, message: hit.message });
+        }
+        saveState();
+        toast(`"${hit.name}" now shines forever.`);
+      }
+    });
+  } else if(hit && hit.caught){
+    toast(`${hit.name}: "${hit.message||'...'}"`);
+  } else {
+    toast("Not quite — try tapping right on a star.");
+  }
+});
+
+/* ---------- flying cat companion in the sky ---------- */
+let flyingCat = null;
+function initFlyingCat(){
+  const layer = document.getElementById("sky-cat-layer");
+  const el = buildCatDOM();
+  el.classList.add("flying");
+  layer.appendChild(el);
+  flyingCat = {
+    el, x: canvas.width*0.5, y: canvas.height*0.3, tx:null, ty:null,
+    chase(x,y){ this.tx=x; this.ty=y; },
+  };
+  // idle drifting target
+  setInterval(()=>{
+    if(flyingCat && Math.random()<0.5){
+      flyingCat.tx = 60+Math.random()*(canvas.width-120);
+      flyingCat.ty = 60+Math.random()*(canvas.height*0.55);
+    }
+  }, 2600);
+}
+function updateFlyingCat(){
+  if(!flyingCat) return;
+  if(flyingCat.tx==null){ flyingCat.tx = canvas.width*0.5; flyingCat.ty = canvas.height*0.3; }
+  flyingCat.x += (flyingCat.tx - flyingCat.x)*0.02;
+  flyingCat.y += (flyingCat.ty - flyingCat.y)*0.02;
+  const facing = (flyingCat.tx - flyingCat.x) < 0 ? -1 : 1;
+  flyingCat.el.style.left = flyingCat.x+"px";
+  flyingCat.el.style.top = flyingCat.y+"px";
+  flyingCat.el.style.transform = `scaleX(${facing})`;
+}
+initFlyingCat();
+
+/* ============================================================
+   PARK WALK — leashed stroll, first-person
+   ============================================================ */
+const parkTreesLayer = document.getElementById("park-trees");
+for(let i=0;i<7;i++){
+  const tr = document.createElement("div");
+  tr.className="tree";
+  tr.style.left = (i*14 + Math.random()*6)+"%";
+  tr.style.transform = `scale(${0.8+Math.random()*0.5})`;
+  tr.innerHTML = `<div class="trunk"></div><div class="top"></div>`;
+  parkTreesLayer.appendChild(tr);
+}
+const parkLayer = document.getElementById("park-cat-layer");
+const parkCat = new Cat(parkLayer, {minX:40, maxX: window.innerWidth-150, groundY: window.innerHeight*0.32}, {
+  allowZoomies:false, allowSleep:false
+});
+setInterval(()=>{
+  if(scenes.park.classList.contains("active") && Math.random()<0.55 && parkCat.state!=="walking"){
+    parkCat.el.classList.add("lookup");
+    toast("She glances up at you.");
+    setTimeout(()=>parkCat.el.classList.remove("lookup"), 1300);
+  }
+}, 4500);
+
+const leashPath = document.getElementById("leash-path");
+function updateLeash(){
+  if(scenes.park.classList.contains("active")){
+    const r = parkCat.el.getBoundingClientRect();
+    const neckX = r.left + r.width*0.62, neckY = r.top + r.height*0.42;
+    const viewerX = window.innerWidth*0.5, viewerY = window.innerHeight+10;
+    const midX = (neckX+viewerX)/2, midY = (neckY+viewerY)/2 - 60;
+    leashPath.setAttribute("d", `M${viewerX},${viewerY} Q${midX},${midY} ${neckX},${neckY}`);
+  }
+  requestAnimationFrame(updateLeash);
+}
+updateLeash();
+
+/* ---------- occasional cursor-following ---------- */
+let lastFollowCheck = 0;
+function maybeFollowCursor(e, cat, sceneEl){
+  if(!sceneEl.classList.contains("active")) return;
+  const now = Date.now();
+  if(now - lastFollowCheck < 3500) return;
+  lastFollowCheck = now;
+  if(Math.random() < 0.18){
+    const rect = sceneEl.getBoundingClientRect();
+    cat.approachPoint(e.clientX - rect.left);
+  }
+}
+document.getElementById("scene-room").addEventListener("mousemove", (e)=>maybeFollowCursor(e, roomCat, scenes.room));
+document.getElementById("scene-garden").addEventListener("mousemove", (e)=>maybeFollowCursor(e, gardenCat, scenes.garden));
+
+/* ---------- CHAT ---------- */
+const chatToggle = document.getElementById("chat-toggle");
+const chatPanel = document.getElementById("chat-panel");
+const chatLog = document.getElementById("chat-log");
+const chatInput = document.getElementById("chat-input");
+chatToggle.addEventListener("click", ()=>{
+  chatPanel.classList.toggle("show");
+  if(chatPanel.classList.contains("show")) chatInput.focus();
+});
+document.getElementById("chat-close").addEventListener("click", ()=>chatPanel.classList.remove("show"));
+
+function addChatMsg(text, who){
+  const m = document.createElement("div");
+  m.className = "chat-msg "+who;
+  m.textContent = text;
+  chatLog.appendChild(m);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+addChatMsg("*ear twitches* ...oh. You're here.", "cat");
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function catReply(userText){
+  const t = userText.toLowerCase();
+  let reply;
+  if(/\bhi\b|\bhello\b|\bhey\b/.test(t)) reply = pick(["Mrrp.","...oh, it's you.","*flicks tail* Hello, I suppose."]);
+  else if(/love you|miss you|love|miss/.test(t)) reply = pick(["*purrs quietly, doesn't admit anything*","...I missed you too. Don't tell anyone.","Hmph. Fine. I like you."]);
+  else if(/food|hungry|treat|eat/.test(t)) reply = pick(["FOOD. Now. Please.","Did someone say treats?!","*stares at you meaningfully, then at the kitchen*"]);
+  else if(/play|game|chase/.test(t)) reply = pick(["*bats at your hand* Catch me if you can.","Only if you can keep up, human.","Zoomies. Incoming. Brace yourself."]);
+  else if(/gauri/.test(t)) reply = pick(["Gauri gives the best scratches. Don't tell her I said that.","Oh, Gauri? We go way back. My favorite.","Gauri knows how to spoil a cat properly."]);
+  else if(/sad|okay\?|alright\?|are you (ok|okay)/.test(t)) reply = pick(["*curls up next to you and says nothing*","I'm here. That's really all I can offer.","Mrrow... *headbutts your arm gently*"]);
+  else if(/sleep|nap|tired/.test(t)) reply = pick(["Napping is my favorite hobby, actually.","*yawns dramatically*","Shh. Sunbeam first, then talk."]);
+  else if(/who are you|your name|what.?s your name/.test(t)) reply = pick(["I go by many names. You may call me whenever there's food.","Does it matter? I already know yours."]);
+  else if(/beautiful|pretty|cute|good girl/.test(t)) reply = pick(["Obviously.","I know.","*preens, pretends not to care*"]);
+  else reply = pick(["Mrow.","...","*stares at you, unimpressed*","*yawns and looks away*","I was napping, you know.","*swats at nothing in particular*","Hmph.","*slow blinks at you* ...that's the nicest thing I do."]);
+  if(!/gauri/.test(t) && Math.random()<0.2){
+    reply += " " + pick(["...My best friend is Gauri, by the way.","Gauri would know what to say here.","Not as good as Gauri at this, but I try."]);
+  }
+  return reply;
+}
+function sendChat(){
+  const val = chatInput.value.trim();
+  if(!val) return;
+  addChatMsg(val, "user");
+  chatInput.value = "";
+  setTimeout(()=>{ addChatMsg(catReply(val), "cat"); }, 500+Math.random()*500);
+}
+document.getElementById("chat-send").addEventListener("click", sendChat);
+chatInput.addEventListener("keydown", (e)=>{ if(e.key==="Enter") sendChat(); });
+
+/* ---------- keep cat bounds responsive ---------- */
+window.addEventListener("resize", ()=>{
+  roomCat.bounds.maxX = Math.min(520, window.innerWidth-140);
+  gardenCat.bounds.maxX = window.innerWidth-140;
+  parkCat.bounds.maxX = window.innerWidth-150;
+});
+
+})();
+</script>
+</body>
+</html>
